@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ดาวน์โหลด APK — ตัวอย่าง</title>
+</head>
+<body>
+  <h1>ชื่อเกม ตัวอย่าง</h1>
+  <p>เวอร์ชัน: 1.0.0 • ขนาด: 45 MB</p>
+  <p>SHA256: <code>3f5a... (แฮชของไฟล์)</code></p>
+  <a href="/download/game-sample.apk" download>ดาวน์โหลด APK</a>
+  <p>หมายเหตุ: ก่อนติดตั้ง ให้เปิดการอนุญาตติดตั้งจากแหล่งที่ไม่รู้จัก และสแกนไฟล์ก่อนใช้</p>
+</body>
+</html>
