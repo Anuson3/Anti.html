@@ -1,0 +1,587 @@
+
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Merry Christmas! 🎄 กล่องของขวัญสุดพิเศษ</title>
+    
+    <!-- โหลด Tailwind CSS สำหรับจัดหน้าให้สวยงามและรองรับมือถือ 100% -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- โหลดฟอนต์ภาษาไทยน่ารักๆ (Mali และ Kanit) และฟอนต์หัวข้อคริสต์มาส (Mountains of Christmas) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&family=Mali:wght@500;700&family=Mountains+of+Christmas:wght@700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ตั้งค่าฟอนต์หลัก */
+        body {
+            font-family: 'Kanit', sans-serif;
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .font-mali {
+            font-family: 'Mali', cursive;
+        }
+
+        .font-christmas {
+            font-family: 'Mountains of Christmas', cursive;
+        }
+
+        /* พื้นหลังไล่สีบรรยากาศค่ำคืนคริสต์มาส */
+        .bg-christmas-night {
+            background: radial-gradient(ellipse at top, #1b4332 0%, #081c15 45%, #2b090e 100%);
+        }
+
+        /* แสงไฟระยิบระยับด้านบน */
+        .fairy-light {
+            animation: twinkle 1.8s infinite alternate ease-in-out;
+        }
+        .fairy-light:nth-child(odd) {
+            animation-delay: 0.9s;
+        }
+        @keyframes twinkle {
+            0% { opacity: 0.4; transform: scale(0.9); filter: brightness(0.8); }
+            100% { opacity: 1; transform: scale(1.15); filter: brightness(1.4); }
+        }
+
+        /* อนิเมชันกล่องของขวัญขยับดุ๊กดิ๊กชวนให้กด */
+        @keyframes giftWiggle {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            15% { transform: rotate(-4deg) scale(1.03); }
+            30% { transform: rotate(4deg) scale(1.03); }
+            45% { transform: rotate(-3deg) scale(1.02); }
+            60% { transform: rotate(3deg) scale(1.02); }
+            75% { transform: rotate(0deg) scale(1); }
+        }
+
+        .gift-wiggle {
+            animation: giftWiggle 2.4s infinite ease-in-out;
+            transform-origin: bottom center;
+        }
+
+        .gift-wiggle:hover {
+            animation: none;
+            transform: scale(1.06);
+        }
+
+        /* อนิเมชันฝาของขวัญเปิดลอยขึ้น */
+        .lid-open {
+            transform: translateY(-95px) rotate(-18deg) scale(0.95);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* อนิเมชันตัวกล่องยุบหายไปเมื่อเปิด */
+        .box-open {
+            transform: translateY(40px) scale(0.85);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* อนิเมชันการ์ดของขวัญเด้งขึ้นมา */
+        @keyframes popUpReveal {
+            0% {
+                opacity: 0;
+                transform: translateY(40px) scale(0.7);
+            }
+            70% {
+                opacity: 1;
+                transform: translateY(-8px) scale(1.02);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .reveal-card {
+            animation: popUpReveal 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        /* แสงออร่าหลังกล่องของขวัญ */
+        .gift-glow {
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.35) 0%, rgba(220, 38, 38, 0.1) 50%, transparent 70%);
+            animation: pulseGlow 3s infinite alternate;
+        }
+
+        @keyframes pulseGlow {
+            0% { transform: scale(0.9); opacity: 0.6; }
+            100% { transform: scale(1.15); opacity: 1; }
+        }
+
+        /* กรอบรูปสไตล์โพลารอยด์ */
+        .polaroid-frame {
+            box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.6), 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-christmas-night min-h-screen w-full relative flex flex-col items-center justify-center text-white overflow-hidden">
+
+    <!-- Canvas สำหรับหิมะตกและพลุกระดาษ (Confetti) -->
+    <canvas id="snowCanvas" class="fixed inset-0 pointer-events-none z-10"></canvas>
+    <canvas id="confettiCanvas" class="fixed inset-0 pointer-events-none z-30"></canvas>
+
+    <!-- สายไฟประดับด้านบนหน้าจอ -->
+    <div class="fixed top-0 left-0 w-full flex justify-around items-start z-20 pointer-events-none px-2">
+        <div class="w-3 h-4 rounded-b-full bg-red-500 shadow-[0_0_12px_#ef4444] fairy-light"></div>
+        <div class="w-3 h-4 rounded-b-full bg-yellow-400 shadow-[0_0_12px_#facc15] fairy-light"></div>
+        <div class="w-3 h-4 rounded-b-full bg-emerald-400 shadow-[0_0_12px_#34d399] fairy-light"></div>
+        <div class="w-3 h-4 rounded-b-full bg-amber-300 shadow-[0_0_12px_#fcd34d] fairy-light"></div>
+        <div class="w-3 h-4 rounded-b-full bg-rose-500 shadow-[0_0_12px_#f43f5e] fairy-light"></div>
+        <div class="w-3 h-4 rounded-b-full bg-yellow-300 shadow-[0_0_12px_#fde047] fairy-light"></div>
+        <div class="w-3 h-4 rounded-b-full bg-green-400 shadow-[0_0_12px_#4ade80] fairy-light"></div>
+        <div class="w-3 h-4 rounded-b-full bg-red-400 shadow-[0_0_12px_#f87171] fairy-light"></div>
+    </div>
+
+    <!-- ปุ่มควบคุมเสียงเพลงมุมขวาบน -->
+    <button id="musicToggleBtn" onclick="toggleMusic()" class="fixed top-5 right-4 z-40 bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/25 rounded-full p-2.5 text-white shadow-lg transition active:scale-95 hidden" title="เปิด/ปิดเสียงเพลง">
+        <span id="musicIcon" class="text-lg">🔊</span>
+    </button>
+
+    <!-- ===================================================================== -->
+    <!-- ส่วนที่ 1: หน้ากล่องของขวัญตรงกลาง (แสดงตอนเปิดลิงก์ครั้งแรก) -->
+    <!-- ===================================================================== -->
+    <main id="giftStage" class="relative z-20 flex flex-col items-center justify-center px-4 w-full max-w-md transition-all duration-500">
+        
+        <!-- หัวข้อต้อนรับด้านบน -->
+        <div class="text-center mb-8 animate-fade-in">
+            <p class="text-amber-300 text-sm tracking-widest uppercase font-semibold mb-1">Special Delivery</p>
+            <h1 class="font-christmas text-4xl sm:text-5xl font-bold text-white drop-shadow-[0_2px_10px_rgba(255,215,0,0.5)]">
+                Merry Christmas
+            </h1>
+        </div>
+
+        <!-- กล่องของขวัญ 3D CSS แบบกดเปิดได้ -->
+        <div id="giftBoxWrapper" onclick="openGiftBox()" class="relative cursor-pointer group flex flex-col items-center justify-center my-2">
+            
+            <!-- แสงออร่าด้านหลังกล่อง -->
+            <div class="absolute w-64 h-64 rounded-full gift-glow pointer-events-none"></div>
+
+            <!-- ตัวกล่องของขวัญ (ขยับดุ๊กดิ๊ก) -->
+            <div id="giftContainer" class="relative w-48 h-48 sm:w-56 sm:h-56 flex flex-col items-center justify-end gift-wiggle transition-all duration-700">
+                
+                <!-- ฝาของขวัญ + โบว์สีทอง -->
+                <div id="giftLid" class="relative z-20 w-52 sm:w-60 flex flex-col items-center transition-all duration-700 ease-out">
+                    <!-- โบว์สีทองด้านบน -->
+                    <div class="relative flex items-end justify-center -mb-2">
+                        <!-- หูโบว์ซ้าย -->
+                        <div class="w-12 h-10 border-[6px] border-amber-400 bg-amber-300/30 rounded-full rounded-br-none -rotate-12 shadow-md"></div>
+                        <!-- ปมโบว์ตรงกลาง -->
+                        <div class="w-6 h-6 bg-gradient-to-tr from-amber-500 to-yellow-200 rounded-md z-10 shadow-md border border-amber-200"></div>
+                        <!-- หูโบว์ขวา -->
+                        <div class="w-12 h-10 border-[6px] border-amber-400 bg-amber-300/30 rounded-full rounded-bl-none rotate-12 shadow-md"></div>
+                    </div>
+                    
+                    <!-- ตัวฝากล่องสีแดงขอบทอง -->
+                    <div class="w-full h-11 bg-gradient-to-r from-red-700 via-red-600 to-red-800 rounded-xl shadow-[0_8px_15px_rgba(0,0,0,0.45)] border-b-2 border-red-900 relative flex justify-center overflow-hidden">
+                        <!-- ริบบิ้นแนวตั้งบนฝา -->
+                        <div class="w-9 h-full bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500 shadow-inner"></div>
+                    </div>
+                </div>
+
+                <!-- ตัวกล่องด้านล่าง -->
+                <div id="giftBody" class="relative z-10 w-44 sm:w-52 h-36 sm:h-40 bg-gradient-to-br from-red-600 via-red-700 to-red-900 rounded-b-2xl shadow-[0_20px_35px_rgba(0,0,0,0.65)] flex justify-center overflow-hidden transition-all duration-700">
+                    <!-- เงาใต้ฝา -->
+                    <div class="absolute top-0 left-0 w-full h-3 bg-black/30"></div>
+                    <!-- ริบบิ้นสีทองแนวตั้ง -->
+                    <div class="w-9 h-full bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500 shadow-md"></div>
+                    <!-- ริบบิ้นสีทองแนวนอน -->
+                    <div class="absolute top-1/2 -translate-y-1/2 w-full h-8 bg-gradient-to-b from-amber-400 via-yellow-300 to-amber-500 opacity-90 shadow-sm"></div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ข้อความเชิญชวนให้กดเปิด -->
+        <div id="tapPrompt" onclick="openGiftBox()" class="mt-10 cursor-pointer bg-white/10 hover:bg-white/20 backdrop-blur-md border border-amber-300/40 px-6 py-3 rounded-full shadow-[0_0_20px_rgba(251,191,36,0.25)] transition transform active:scale-95">
+            <p class="font-mali text-base sm:text-lg text-amber-200 font-bold tracking-wide flex items-center gap-2">
+                <span>ແຕະເພື່ອເປິດກ່ອງ💙💚</span>
+                <span class="text-xl animate-bounce">🎁</span>
+            </p>
+        </div>
+
+    </main>
+
+    <!-- ===================================================================== -->
+    <!-- ส่วนที่ 2: หน้าแสดงคำอวยพรด้านบน + รูปภาพของขวัญด้านล่าง (ซ่อนไว้ก่อน) -->
+    <!-- ===================================================================== -->
+    <section id="surpriseStage" class="hidden relative z-20 w-full max-w-md px-5 py-8 flex flex-col items-center justify-center">
+        
+        <div class="w-full reveal-card flex flex-col items-center">
+            
+            <!-- กล่องคำอวยพรคริสต์มาสด้านบน -->
+            <div class="w-full bg-white/10 backdrop-blur-md border border-amber-300/40 rounded-3xl p-5 sm:p-6 mb-5 text-center shadow-[0_10px_30px_rgba(0,0,0,0.4)] relative">
+                <!-- ไอคอนตกแต่งมุมการ์ด -->
+                <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-red-600 to-emerald-700 border border-amber-300 px-4 py-1 rounded-full text-xs font-mali font-bold text-amber-200 shadow-md">
+                    🎄 For You 🎅
+                </div>
+
+                <!-- หัวข้อคำอวยพร (แก้ไขใน JavaScript ด้านล่างได้) -->
+                <h2 id="greetingTitle" class="font-mali text-2xl sm:text-3xl font-bold text-amber-300 mt-2 mb-2 drop-shadow">
+                    Merry Christmas! 🎄✨
+                </h2>
+
+                <!-- เนื้อหาคำอวยพร (แก้ไขใน JavaScript ด้านล่างได้) -->
+                <p id="greetingMessage" class="font-mali text-sm sm:text-base text-white/95 leading-relaxed">
+                    ຂໍໃຫ້ມີຄວາມສຸກຂໍໃຫ້ໂສດຂ້າມປີຂໍໃຫ້ໄດ້ກິນຫມູກະທະອິ່ມ ສົມຫວັງໃນສິ່ງທີ່ຕ້ອງການ ຕຸ້ຍຂຶ້ນເພິ່ມໄຂມັນ+ຄໍຄາບອນ🥰 ຢູ່ນຳໝູ່ເພື່ອນຕຸ້ຍໆຂອງມຶງເຊັ່ນຣາຊີນີເອຟເຟກ ❄️❤️
+                </p>
+            </div>
+
+            <!-- กรอบรูปภาพสไตล์โพลารอยด์ด้านล่างคำอวยพร -->
+            <div class="w-full max-w-[310px] sm:max-w-[340px] bg-white p-3.5 pb-5 rounded-2xl polaroid-frame transform -rotate-1 hover:rotate-0 transition duration-300">
+                <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-red-950 flex items-center justify-center">
+                    <!-- รูปภาพจะถูกโหลดจากตัวแปร GIFT_CONFIG ด้านล่าง -->
+                    <img id="giftImage" 
+                         src="" 
+                         alt="ของขวัญคริสต์มาส" 
+                         class="w-full h-full object-cover transition duration-500"
+                         onerror="handleImageError(this)">
+                    
+                    <!-- สติ๊กเกอร์ตกแต่งมุมรูป -->
+                    <span class="absolute top-2.5 right-2.5 text-2xl drop-shadow-md">🎀</span>
+                    <span class="absolute bottom-2.5 left-2.5 text-2xl drop-shadow-md">⛄</span>
+                </div>
+
+                <!-- ข้อความใต้กรอบรูปโพลารอยด์ -->
+                <div class="mt-3.5 text-center">
+                    <p id="photoCaption" class="font-mali text-gray-800 font-bold text-base sm:text-lg">
+                        ສຸກສັນວັນຄລິສມາສລ່ວງໜ້າ! 🎁✨
+                    </p>
+                    <p id="photoDate" class="text-xs text-gray-400 mt-0.5 font-medium">
+                        25 December • Warm Wishes
+                    </p>
+                </div>
+            </div>
+
+            <!-- ปุ่มปิดกล่อง / ดูอีกครั้ง -->
+            <button onclick="resetGiftBox()" class="mt-6 bg-white/15 hover:bg-white/25 active:scale-95 backdrop-blur-md border border-white/30 text-white font-mali text-sm px-5 py-2.5 rounded-full shadow-lg transition flex items-center gap-2">
+                <span>🔄</span>
+                <span>ປິດກ່ອງ / ເປິດອີກ</span>
+            </button>
+
+        </div>
+
+    </section>
+
+    <script>
+        // =========================================================================
+        // 🎄 ตั้งค่าข้อความอวยพรและรูปภาพของคุณตรงนี้ได้เลย! (แก้ไขง่ายๆ ในจุดเดียว)
+        // =========================================================================
+        const GIFT_CONFIG = {
+            // 1. หัวข้อคำอวยพรด้านบน
+            title: "Merry Christmas! by anouson 🎄✨",
+
+            // 2. ข้อความอวยพรยาวๆ ด้านบนรูปภาพ
+            message: "ขอให้มีความสุขมากๆ สมหวังในทุกสิ่งที่ปรารถนา สุขภาพแข็งแรง และมีรอยยิ้มที่สดใสในทุกๆ วันนะ ❄️❤️",
+
+            // 3. ลิงก์รูปภาพของขวัญ (นำลิงก์รูปภาพของคุณมาวางแทนที่ลิงก์ด้านล่างนี้ได้เลย)
+            // แนะนำ: ใช้รูปสี่เหลี่ยมจัตุรัสหรือแนวตั้งจะสวยพอดีกรอบโพลารอยด์ครับ
+            imageUrl: "https://images.unsplash.com/photo-1543589077-47d81606c1bf?auto=format&fit=crop&w=800&q=80",
+
+            // 4. ข้อความสั้นๆ ใต้กรอบรูปโพลารอยด์
+            caption: "สุขสันต์วันคริสต์มาสนะ! 🎁✨",
+
+            // 5. วันที่หรือข้อความเล็กๆ ด้านล่างสุดของการ์ด
+            subCaption: "25 December • Warm Wishes"
+        };
+        // =========================================================================
+
+        // นำค่าที่ตั้งไว้ไปแสดงผลในหน้าเว็บ
+        document.getElementById('greetingTitle').textContent = GIFT_CONFIG.title;
+        document.getElementById('greetingMessage').textContent = GIFT_CONFIG.message;
+        document.getElementById('giftImage').src = GIFT_CONFIG.imageUrl;
+        document.getElementById('photoCaption').textContent = GIFT_CONFIG.caption;
+        document.getElementById('photoDate').textContent = GIFT_CONFIG.subCaption;
+
+        // กรณีลิงก์รูปภาพมีปัญหาหรือโหลดไม่ขึ้น ให้แสดงภาพการ์ดคริสต์มาส SVG สำรองอัตโนมัติ
+        function handleImageError(imgElement) {
+            const fallbackSvg = `data:image/svg+xml;utf8,` + encodeURIComponent(`
+                <svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="0 0 500 500">
+                    <defs>
+                        <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#991b1b"/>
+                            <stop offset="100%" stop-color="#065f46"/>
+                        </linearGradient>
+                    </defs>
+                    <rect width="500" height="500" fill="url(#bg)"/>
+                    <circle cx="250" cy="210" r="110" fill="#ffffff" fill-opacity="0.12"/>
+                    <text x="250" y="235" font-size="110" text-anchor="middle">🎄</text>
+                    <text x="250" y="330" font-family="sans-serif" font-size="28" font-weight="bold" fill="#fde047" text-anchor="middle">Merry Christmas!</text>
+                    <text x="250" y="368" font-family="sans-serif" font-size="18" fill="#ffffff" text-anchor="middle">Wishing you joy &amp; happiness</text>
+                </svg>
+            `);
+            imgElement.src = fallbackSvg;
+        }
+
+        // =========================================================================
+        // 🎵 ระบบสังเคราะห์เสียงเพลงคริสต์มาส (Jingle Bells) ด้วย Web Audio API
+        // =========================================================================
+        let audioCtx = null;
+        let isMusicPlaying = false;
+        let melodyTimeout = null;
+
+        // โน้ตเพลง Jingle Bells (ความถี่ Hz และความยาวจังหวะ)
+        const jingleBellsNotes = [
+            { f: 659.25, d: 0.25 }, { f: 659.25, d: 0.25 }, { f: 659.25, d: 0.5 }, // E E E
+            { f: 659.25, d: 0.25 }, { f: 659.25, d: 0.25 }, { f: 659.25, d: 0.5 }, // E E E
+            { f: 659.25, d: 0.25 }, { f: 783.99, d: 0.25 }, { f: 523.25, d: 0.35 }, { f: 587.33, d: 0.15 }, { f: 659.25, d: 0.8 }, // E G C D E
+            { f: 698.46, d: 0.25 }, { f: 698.46, d: 0.25 }, { f: 698.46, d: 0.35 }, { f: 698.46, d: 0.15 }, // F F F F
+            { f: 698.46, d: 0.25 }, { f: 659.25, d: 0.25 }, { f: 659.25, d: 0.25 }, { f: 659.25, d: 0.25 }, // F E E E
+            { f: 659.25, d: 0.25 }, { f: 587.33, d: 0.25 }, { f: 587.33, d: 0.25 }, { f: 659.25, d: 0.25 }, { f: 587.33, d: 0.5 }, { f: 783.99, d: 0.5 } // E D D E D G
+        ];
+
+        function playChristmasMusic() {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                isMusicPlaying = true;
+                document.getElementById('musicToggleBtn').classList.remove('hidden');
+                document.getElementById('musicIcon').textContent = '🔊';
+
+                let noteIndex = 0;
+
+                function playNextNote() {
+                    if (!isMusicPlaying) return;
+
+                    const note = jingleBellsNotes[noteIndex];
+                    const now = audioCtx.currentTime;
+
+                    // สร้างเสียงกระดิ่งกล่องดนตรี (Music Box tone)
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(note.f, now);
+
+                    // ปรับความดังให้นุ่มนวลเหมือนกล่องดนตรี
+                    gain.gain.setValueAtTime(0.001, now);
+                    gain.gain.exponentialRampToValueAtTime(0.12, now + 0.03);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + note.d * 1.4);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.start(now);
+                    osc.stop(now + note.d * 1.4);
+
+                    noteIndex = (noteIndex + 1) % jingleBellsNotes.length;
+                    const pauseExtra = (noteIndex === 0) ? 800 : 60;
+                    melodyTimeout = setTimeout(playNextNote, note.d * 1000 + pauseExtra);
+                }
+
+                clearTimeout(melodyTimeout);
+                playNextNote();
+            } catch (e) {
+                console.log("Audio playback skipped:", e);
+            }
+        }
+
+        function stopChristmasMusic() {
+            isMusicPlaying = false;
+            clearTimeout(melodyTimeout);
+            document.getElementById('musicIcon').textContent = '🔇';
+        }
+
+        function toggleMusic() {
+            if (isMusicPlaying) {
+                stopChristmasMusic();
+            } else {
+                playChristmasMusic();
+            }
+        }
+
+        // =========================================================================
+        // 🎁 ฟังก์ชันเปิดและปิดกล่องของขวัญ
+        // =========================================================================
+        let isOpened = false;
+
+        function openGiftBox() {
+            if (isOpened) return;
+            isOpened = true;
+
+            const giftContainer = document.getElementById('giftContainer');
+            const giftLid = document.getElementById('giftLid');
+            const giftBody = document.getElementById('giftBody');
+            const tapPrompt = document.getElementById('tapPrompt');
+            const giftStage = document.getElementById('giftStage');
+            const surpriseStage = document.getElementById('surpriseStage');
+
+            // หยุดการขยับดุ๊กดิ๊กและเล่นอนิเมชันเปิดฝา
+            giftContainer.classList.remove('gift-wiggle');
+            giftLid.classList.add('lid-open');
+            giftBody.classList.add('box-open');
+            tapPrompt.style.opacity = '0';
+
+            // ยิงพลุกระดาษและเล่นเสียงเพลง
+            launchConfetti();
+            playChristmasMusic();
+
+            // สลับไปยังหน้าแสดงคำอวยพรและรูปภาพ
+            setTimeout(() => {
+                giftStage.classList.add('hidden');
+                surpriseStage.classList.remove('hidden');
+            }, 550);
+        }
+
+        function resetGiftBox() {
+            isOpened = false;
+
+            const giftContainer = document.getElementById('giftContainer');
+            const giftLid = document.getElementById('giftLid');
+            const giftBody = document.getElementById('giftBody');
+            const tapPrompt = document.getElementById('tapPrompt');
+            const giftStage = document.getElementById('giftStage');
+            const surpriseStage = document.getElementById('surpriseStage');
+
+            // รีเซ็ตสถานะกล่องของขวัญกลับมาเหมือนเดิม
+            surpriseStage.classList.add('hidden');
+            giftStage.classList.remove('hidden');
+
+            giftLid.classList.remove('lid-open');
+            giftBody.classList.remove('box-open');
+            tapPrompt.style.opacity = '1';
+            giftContainer.classList.add('gift-wiggle');
+        }
+
+        // =========================================================================
+        // ❄️ เอฟเฟกต์หิมะตกโปรยปราย (Snowfall Canvas)
+        // =========================================================================
+        const snowCanvas = document.getElementById('snowCanvas');
+        const snowCtx = snowCanvas.getContext('2d');
+        let snowflakes = [];
+
+        function resizeCanvases() {
+            snowCanvas.width = window.innerWidth;
+            snowCanvas.height = window.innerHeight;
+            confettiCanvas.width = window.innerWidth;
+            confettiCanvas.height = window.innerHeight;
+        }
+
+        function initSnow() {
+            snowflakes = [];
+            const count = Math.min(75, Math.floor(window.innerWidth / 6));
+            for (let i = 0; i < count; i++) {
+                snowflakes.push({
+                    x: Math.random() * snowCanvas.width,
+                    y: Math.random() * snowCanvas.height,
+                    radius: Math.random() * 3 + 1.2,
+                    speedY: Math.random() * 1.2 + 0.4,
+                    speedX: Math.random() * 0.6 - 0.3,
+                    opacity: Math.random() * 0.6 + 0.3
+                });
+            }
+        }
+
+        function drawSnow() {
+            snowCtx.clearRect(0, 0, snowCanvas.width, snowCanvas.height);
+            snowflakes.forEach(flake => {
+                snowCtx.beginPath();
+                snowCtx.arc(flake.x, flake.y, flake.radius, 0, Math.PI * 2);
+                snowCtx.fillStyle = `rgba(255, 255, 255, ${flake.opacity})`;
+                snowCtx.fill();
+
+                flake.y += flake.speedY;
+                flake.x += flake.speedX;
+
+                if (flake.y > snowCanvas.height) {
+                    flake.y = -5;
+                    flake.x = Math.random() * snowCanvas.width;
+                }
+                if (flake.x > snowCanvas.width) flake.x = 0;
+                if (flake.x < 0) flake.x = snowCanvas.width;
+            });
+            requestAnimationFrame(drawSnow);
+        }
+
+        // =========================================================================
+        // 🎉 เอฟเฟกต์พลุกระดาษและประกายดาวตอนเปิดกล่อง (Confetti Canvas)
+        // =========================================================================
+        const confettiCanvas = document.getElementById('confettiCanvas');
+        const confettiCtx = confettiCanvas.getContext('2d');
+        let confettiParticles = [];
+        let confettiAnimating = false;
+
+        function launchConfetti() {
+            confettiParticles = [];
+            const colors = ['#facc15', '#ef4444', '#22c55e', '#ffffff', '#fbbf24', '#f43f5e'];
+            const centerX = confettiCanvas.width / 2;
+            const centerY = confettiCanvas.height / 2;
+
+            for (let i = 0; i < 110; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = Math.random() * 11 + 4;
+                confettiParticles.push({
+                    x: centerX,
+                    y: centerY,
+                    vx: Math.cos(angle) * velocity,
+                    vy: Math.sin(angle) * velocity - 4,
+                    size: Math.random() * 7 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    rotation: Math.random() * 360,
+                    rotationSpeed: (Math.random() - 0.5) * 12,
+                    gravity: 0.25,
+                    alpha: 1
+                });
+            }
+
+            if (!confettiAnimating) {
+                confettiAnimating = true;
+                animateConfetti();
+            }
+        }
+
+        function animateConfetti() {
+            confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+
+            for (let i = confettiParticles.length - 1; i >= 0; i--) {
+                const p = confettiParticles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += p.gravity;
+                p.vx *= 0.98;
+                p.rotation += p.rotationSpeed;
+                p.alpha -= 0.009;
+
+                if (p.alpha <= 0) {
+                    confettiParticles.splice(i, 1);
+                    continue;
+                }
+
+                confettiCtx.save();
+                confettiCtx.translate(p.x, p.y);
+                confettiCtx.rotate((p.rotation * Math.PI) / 180);
+                confettiCtx.globalAlpha = p.alpha;
+                confettiCtx.fillStyle = p.color;
+                confettiCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+                confettiCtx.restore();
+            }
+
+            if (confettiParticles.length > 0) {
+                requestAnimationFrame(animateConfetti);
+            } else {
+                confettiAnimating = false;
+            }
+        }
+
+        // เริ่มทำงานเมื่อโหลดหน้าเว็บเสร็จสมบูรณ์
+        window.addEventListener('resize', () => {
+            resizeCanvases();
+            initSnow();
+        });
+
+        window.onload = function() {
+            resizeCanvases();
+            initSnow();
+            drawSnow();
+        };
+    </script>
+</body>
+</html>
